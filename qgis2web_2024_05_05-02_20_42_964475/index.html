@@ -1,0 +1,1329 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>The Marmaduke Maids</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet-svg-shape-markers.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/VirginiaResidences_1.js"></script>
+        <script src="data/LastResidenceinEngland_2.js"></script>
+        <script src="data/HomeTown_3.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ffffff',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffffff',
+                fillOpacity: 1
+              });
+            }
+        }
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        }).fitBounds([[36.69830146121343,-77.14552951319209],[37.53708280627029,-75.87091018272352]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        document.querySelector(".leaflet-popup-pane").addEventListener("load", function(event) {
+          var tagName = event.target.tagName,
+            popup = map._popup;
+          // Also check if flag is already set.
+          if (tagName === "IMG" && popup && !popup._updated) {
+            popup._updated = true; // Set flag to prevent looping.
+            popup.update();
+          }
+        }, true);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_CartoDBPositronretina_0');
+        map.getPane('pane_CartoDBPositronretina_0').style.zIndex = 400;
+        var layer_CartoDBPositronretina_0 = L.tileLayer('https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png', {
+            pane: 'pane_CartoDBPositronretina_0',
+            opacity: 1.0,
+            attribution: '<a href="https://cartodb.com/basemaps/">Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_CartoDBPositronretina_0;
+        map.addLayer(layer_CartoDBPositronretina_0);
+        function pop_VirginiaResidences_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td class="visible-with-data" id="name">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Age</th>\
+                        <td class="visible-with-data" id="age">' + (feature.properties['age'] !== null ? autolinker.link(feature.properties['age'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Settled</th>\
+                        <td class="visible-with-data" id="settled">' + (feature.properties['settled'] !== null ? autolinker.link(feature.properties['settled'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Married</th>\
+                        <td class="visible-with-data" id="married">' + (feature.properties['married'] !== null ? autolinker.link(feature.properties['married'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">More Info</th>\
+                        <td class="visible-with-data" id="more_information">' + (feature.properties['more_information'] !== null ? autolinker.link(feature.properties['more_information'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_VirginiaResidences_1_0(feature) {
+            switch(String(feature.properties['name'])) {
+                case 'Allice Burges':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(48,18,59,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Buergen':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(65,71,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Harmer':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(71,119,239,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Jackson':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(56,165,251,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Tanner':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(27,208,213,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Audry Hoare':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(38,237,166,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Catherine Finch':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(100,253,106,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Jane Dier':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(164,252,60,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Joanne Fletcher':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,232,53,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lettice King':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(245,198,58,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Margarett Bordman':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,153,44,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mary Ghibbs':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(243,99,21,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Susan Binx':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(217,56,7,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ursula Clawson':
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,25,1,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_VirginiaResidences_1',
+                radius: 10.000000000000005,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(122,4,3,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_VirginiaResidences_1');
+        map.getPane('pane_VirginiaResidences_1').style.zIndex = 401;
+        map.getPane('pane_VirginiaResidences_1').style['mix-blend-mode'] = 'normal';
+        var layer_VirginiaResidences_1 = new L.geoJson(json_VirginiaResidences_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_VirginiaResidences_1',
+            layerName: 'layer_VirginiaResidences_1',
+            pane: 'pane_VirginiaResidences_1',
+            onEachFeature: pop_VirginiaResidences_1,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_VirginiaResidences_1_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_VirginiaResidences_1);
+        function pop_LastResidenceinEngland_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td class="visible-with-data" id="name">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Age</th>\
+                        <td class="visible-with-data" id="age">' + (feature.properties['age'] !== null ? autolinker.link(feature.properties['age'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Named Sponsors and Connections</th>\
+                        <td class="visible-with-data" id="named_sponsors_connections">' + (feature.properties['named_sponsors_connections'] !== null ? autolinker.link(feature.properties['named_sponsors_connections'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Parental Status</th>\
+                        <td class="visible-with-data" id="parental_status">' + (feature.properties['parental_status'] !== null ? autolinker.link(feature.properties['parental_status'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Paternal Occupation</th>\
+                        <td class="visible-with-data" id="paternal_occupation">' + (feature.properties['paternal_occupation'] !== null ? autolinker.link(feature.properties['paternal_occupation'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Home Town</th>\
+                        <td class="visible-with-data" id="home">' + (feature.properties['home'] !== null ? autolinker.link(feature.properties['home'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Last Residence in England</th>\
+                        <td class="visible-with-data" id="living">' + (feature.properties['living'] !== null ? autolinker.link(feature.properties['living'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Married</th>\
+                        <td class="visible-with-data" id="married">' + (feature.properties['married'] !== null ? autolinker.link(feature.properties['married'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Settled</th>\
+                        <td class="visible-with-data" id="settled">' + (feature.properties['settled'] !== null ? autolinker.link(feature.properties['settled'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Skills</th>\
+                        <td class="visible-with-data" id="skills">' + (feature.properties['skills'] !== null ? autolinker.link(feature.properties['skills'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Employment</th>\
+                        <td class="visible-with-data" id="employment">' + (feature.properties['employment'] !== null ? autolinker.link(feature.properties['employment'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_LastResidenceinEngland_2_0(feature) {
+            switch(String(feature.properties['name'])) {
+                case 'Allice Burges':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(48,18,59,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Buergen':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(65,71,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Harmer':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(71,119,239,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Jackson':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(56,165,251,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Tanner':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(27,208,213,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Audry Hoare':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(38,237,166,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Catherine Finch':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(100,253,106,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Jane Dier':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(164,252,60,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Joanne Fletcher':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,232,53,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lettice King':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(245,198,58,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Margarett Bordman':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,153,44,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mary Ghibbs':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(243,99,21,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Susan Binx':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(217,56,7,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ursula Clawson':
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,25,1,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_LastResidenceinEngland_2',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(122,4,3,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_LastResidenceinEngland_2');
+        map.getPane('pane_LastResidenceinEngland_2').style.zIndex = 402;
+        map.getPane('pane_LastResidenceinEngland_2').style['mix-blend-mode'] = 'normal';
+        var layer_LastResidenceinEngland_2 = new L.geoJson(json_LastResidenceinEngland_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_LastResidenceinEngland_2',
+            layerName: 'layer_LastResidenceinEngland_2',
+            pane: 'pane_LastResidenceinEngland_2',
+            onEachFeature: pop_LastResidenceinEngland_2,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_LastResidenceinEngland_2_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_LastResidenceinEngland_2);
+        function pop_HomeTown_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td class="visible-with-data" id="name">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Age</th>\
+                        <td class="visible-with-data" id="age">' + (feature.properties['age'] !== null ? autolinker.link(feature.properties['age'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Named Sponsors and Connections</th>\
+                        <td class="visible-with-data" id="named_sponsors_connections">' + (feature.properties['named_sponsors_connections'] !== null ? autolinker.link(feature.properties['named_sponsors_connections'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Parental Status</th>\
+                        <td class="visible-with-data" id="parental_status">' + (feature.properties['parental_status'] !== null ? autolinker.link(feature.properties['parental_status'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Paternal Occupation</th>\
+                        <td class="visible-with-data" id="paternal_occupation">' + (feature.properties['paternal_occupation'] !== null ? autolinker.link(feature.properties['paternal_occupation'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Home Town</th>\
+                        <td class="visible-with-data" id="home">' + (feature.properties['home'] !== null ? autolinker.link(feature.properties['home'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Married</th>\
+                        <td class="visible-with-data" id="married">' + (feature.properties['married'] !== null ? autolinker.link(feature.properties['married'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Settled</th>\
+                        <td class="visible-with-data" id="settled">' + (feature.properties['settled'] !== null ? autolinker.link(feature.properties['settled'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Skills</th>\
+                        <td class="visible-with-data" id="skills">' + (feature.properties['skills'] !== null ? autolinker.link(feature.properties['skills'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Employment</th>\
+                        <td class="visible-with-data" id="employment">' + (feature.properties['employment'] !== null ? autolinker.link(feature.properties['employment'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_HomeTown_3_0(feature) {
+            switch(String(feature.properties['name'])) {
+                case 'Allice Burges':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(48,18,59,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Buergen':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(65,71,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Harmer':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(71,119,239,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Jackson':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(56,165,251,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ann Tanner':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(27,208,213,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Audry Hoare':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(38,237,166,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Catherine Finch':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(100,253,106,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Jane Dier':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(164,252,60,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Joanne Fletcher':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,232,53,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lettice King':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(245,198,58,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Margarett Bordman':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,153,44,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mary Ghibbs':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(243,99,21,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Susan Binx':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(217,56,7,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ursula Clawson':
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,25,1,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_HomeTown_3',
+                radius: 18.333333333333325,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(122,4,3,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_HomeTown_3');
+        map.getPane('pane_HomeTown_3').style.zIndex = 403;
+        map.getPane('pane_HomeTown_3').style['mix-blend-mode'] = 'normal';
+        var layer_HomeTown_3 = new L.geoJson(json_HomeTown_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_HomeTown_3',
+            layerName: 'layer_HomeTown_3',
+            pane: 'pane_HomeTown_3',
+            onEachFeature: pop_HomeTown_3,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.shapeMarker(latlng, style_HomeTown_3_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_HomeTown_3);
+        map.addLayer(layer_HomeTown_3);
+            var title = new L.Control();
+            title.onAdd = function (map) {
+                this._div = L.DomUtil.create('div', 'info');
+                this.update();
+                return this._div;
+            };
+            title.update = function () {
+                this._div.innerHTML = '<h2>The Marmaduke Maids</h2>';
+            };
+            title.addTo(map);
+            var abstract = new L.Control({'position':'bottomleft'});
+            abstract.onAdd = function (map) {
+                this._div = L.DomUtil.create('div',
+                'leaflet-control abstract');
+                this._div.id = 'abstract'
+                    this._div.setAttribute("onmouseenter", "abstract.show()");
+                    this._div.setAttribute("onmouseleave", "abstract.hide()");
+                    this.hide();
+                    return this._div;
+                };
+                abstract.hide = function () {
+                    this._div.classList.remove("abstractUncollapsed");
+                    this._div.classList.add("abstract");
+                    this._div.innerHTML = 'i'
+                }
+                abstract.show = function () {
+                    this._div.classList.remove("abstract");
+                    this._div.classList.add("abstractUncollapsed");
+                    this._div.innerHTML = 'Only fourteen years after the Virginia Company of London received its royal charter from King James I in 1606,  90 English women would be sent across the Atlantic to begin new lives as wives of the first settler of the Jamestown settlement.  In 1607,  as a part of the British imperial project in hopes to further contest with Spain’s political and religious expansion,  the Virginia Company of London founded the Jamestown settlement on the banks of the James River.  In August of 1621,  thirteen young women boarded the Marmaduke in East Cowes on the Isle of Wight for Virginia.  When they arrived to the newly established settlement,  they were to find husbands who would then repay the Virginia Company in tobacco to repay those who had sponsored the women\'s journey.  ';
+            };
+            abstract.addTo(map);
+        var baseMaps = {};
+        var overlaysTree = [
+            {label: 'Home Town<br /><table><tr><td style="text-align: center;"><img src="legend/HomeTown_3_AlliceBurges0.png" /></td><td>Allice Burges</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_AnnBuergen1.png" /></td><td>Ann Buergen</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_AnnHarmer2.png" /></td><td>Ann Harmer</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_AnnJackson3.png" /></td><td>Ann Jackson</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_AnnTanner4.png" /></td><td>Ann Tanner</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_AudryHoare5.png" /></td><td>Audry Hoare</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_CatherineFinch6.png" /></td><td>Catherine Finch</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_JaneDier7.png" /></td><td>Jane Dier</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_JoanneFletcher8.png" /></td><td>Joanne Fletcher</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_LetticeKing9.png" /></td><td>Lettice King</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_MargarettBordman10.png" /></td><td>Margarett Bordman</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_MaryGhibbs11.png" /></td><td>Mary Ghibbs</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_SusanBinx12.png" /></td><td>Susan Binx</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_UrsulaClawson13.png" /></td><td>Ursula Clawson</td></tr><tr><td style="text-align: center;"><img src="legend/HomeTown_3_14.png" /></td><td></td></tr></table>', layer: layer_HomeTown_3},
+            {label: 'Last Residence in England<br /><table><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_AlliceBurges0.png" /></td><td>Allice Burges</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_AnnBuergen1.png" /></td><td>Ann Buergen</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_AnnHarmer2.png" /></td><td>Ann Harmer</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_AnnJackson3.png" /></td><td>Ann Jackson</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_AnnTanner4.png" /></td><td>Ann Tanner</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_AudryHoare5.png" /></td><td>Audry Hoare</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_CatherineFinch6.png" /></td><td>Catherine Finch</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_JaneDier7.png" /></td><td>Jane Dier</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_JoanneFletcher8.png" /></td><td>Joanne Fletcher</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_LetticeKing9.png" /></td><td>Lettice King</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_MargarettBordman10.png" /></td><td>Margarett Bordman</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_MaryGhibbs11.png" /></td><td>Mary Ghibbs</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_SusanBinx12.png" /></td><td>Susan Binx</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_UrsulaClawson13.png" /></td><td>Ursula Clawson</td></tr><tr><td style="text-align: center;"><img src="legend/LastResidenceinEngland_2_14.png" /></td><td></td></tr></table>', layer: layer_LastResidenceinEngland_2},
+            {label: 'Virginia Residences<br /><table><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_AlliceBurges0.png" /></td><td>Allice Burges</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_AnnBuergen1.png" /></td><td>Ann Buergen</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_AnnHarmer2.png" /></td><td>Ann Harmer</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_AnnJackson3.png" /></td><td>Ann Jackson</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_AnnTanner4.png" /></td><td>Ann Tanner</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_AudryHoare5.png" /></td><td>Audry Hoare</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_CatherineFinch6.png" /></td><td>Catherine Finch</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_JaneDier7.png" /></td><td>Jane Dier</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_JoanneFletcher8.png" /></td><td>Joanne Fletcher</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_LetticeKing9.png" /></td><td>Lettice King</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_MargarettBordman10.png" /></td><td>Margarett Bordman</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_MaryGhibbs11.png" /></td><td>Mary Ghibbs</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_SusanBinx12.png" /></td><td>Susan Binx</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_UrsulaClawson13.png" /></td><td>Ursula Clawson</td></tr><tr><td style="text-align: center;"><img src="legend/VirginiaResidences_1_14.png" /></td><td></td></tr></table>', layer: layer_VirginiaResidences_1},
+            {label: "CartoDB Positron (retina)", layer: layer_CartoDBPositronretina_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"age": "str","paternal_occupation": "str","parental_status": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_age = document.createElement('div');
+            div_age.id = "div_age";
+            div_age.className= "filterselect";
+            document.getElementById("menu").appendChild(div_age);
+            sel_age = document.createElement('select');
+            sel_age.multiple = true;
+            sel_age.size = 9;
+            sel_age.id = "sel_age";
+            var age_options_str = "<option value='' unselected></option>";
+            sel_age.onchange = function(){filterFunc()};
+            age_options_str  += '<option value="15">15</option>';
+            age_options_str  += '<option value="19">19</option>';
+            age_options_str  += '<option value="20">20</option>';
+            age_options_str  += '<option value="21">21</option>';
+            age_options_str  += '<option value="23">23</option>';
+            age_options_str  += '<option value="25">25</option>';
+            age_options_str  += '<option value="27">27</option>';
+            age_options_str  += '<option value="28">28</option>';
+            age_options_str  += '<option value="Not listed">Not listed</option>';
+            sel_age.innerHTML = age_options_str;
+            div_age.appendChild(sel_age);
+            var lab_age = document.createElement('div');
+            lab_age.innerHTML = 'age';
+            lab_age.className = 'filterlabel';
+            div_age.appendChild(lab_age);
+            var reset_age = document.createElement('div');
+            reset_age.innerHTML = 'clear filter';
+            reset_age.className = 'filterlabel';
+            reset_age.onclick = function() {
+                var options = document.getElementById("sel_age").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_age.appendChild(reset_age);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_paternal_occupation = document.createElement('div');
+            div_paternal_occupation.id = "div_paternal_occupation";
+            div_paternal_occupation.className= "filterselect";
+            document.getElementById("menu").appendChild(div_paternal_occupation);
+            sel_paternal_occupation = document.createElement('select');
+            sel_paternal_occupation.multiple = true;
+            sel_paternal_occupation.size = 10;
+            sel_paternal_occupation.id = "sel_paternal_occupation";
+            var paternal_occupation_options_str = "<option value='' unselected></option>";
+            sel_paternal_occupation.onchange = function(){filterFunc()};
+            paternal_occupation_options_str  += '<option value="NULL">NULL</option>';
+            paternal_occupation_options_str  += '<option value="Brother is King&apos;s crossbow maker">Brother is King&apos;s crossbow maker</option>';
+            paternal_occupation_options_str  += '<option value="Gardener">Gardener</option>';
+            paternal_occupation_options_str  += '<option value="Gentleman">Gentleman</option>';
+            paternal_occupation_options_str  += '<option value="Gentleman ">Gentleman </option>';
+            paternal_occupation_options_str  += '<option value="Husbandman">Husbandman</option>';
+            paternal_occupation_options_str  += '<option value="Shoemaker">Shoemaker</option>';
+            paternal_occupation_options_str  += '<option value="Smith">Smith</option>';
+            paternal_occupation_options_str  += '<option value="Waterman">Waterman</option>';
+            paternal_occupation_options_str  += '<option value="Wiredrawer">Wiredrawer</option>';
+            sel_paternal_occupation.innerHTML = paternal_occupation_options_str;
+            div_paternal_occupation.appendChild(sel_paternal_occupation);
+            var lab_paternal_occupation = document.createElement('div');
+            lab_paternal_occupation.innerHTML = 'paternal_occupation';
+            lab_paternal_occupation.className = 'filterlabel';
+            div_paternal_occupation.appendChild(lab_paternal_occupation);
+            var reset_paternal_occupation = document.createElement('div');
+            reset_paternal_occupation.innerHTML = 'clear filter';
+            reset_paternal_occupation.className = 'filterlabel';
+            reset_paternal_occupation.onclick = function() {
+                var options = document.getElementById("sel_paternal_occupation").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_paternal_occupation.appendChild(reset_paternal_occupation);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_parental_status = document.createElement('div');
+            div_parental_status.id = "div_parental_status";
+            div_parental_status.className= "filterselect";
+            document.getElementById("menu").appendChild(div_parental_status);
+            sel_parental_status = document.createElement('select');
+            sel_parental_status.multiple = true;
+            sel_parental_status.size = 5;
+            sel_parental_status.id = "sel_parental_status";
+            var parental_status_options_str = "<option value='' unselected></option>";
+            sel_parental_status.onchange = function(){filterFunc()};
+            parental_status_options_str  += '<option value="NULL">NULL</option>';
+            parental_status_options_str  += '<option value="Both Alive">Both Alive</option>';
+            parental_status_options_str  += '<option value="Both Deceased">Both Deceased</option>';
+            parental_status_options_str  += '<option value="Father Deceased">Father Deceased</option>';
+            parental_status_options_str  += '<option value="Mother Deceased">Mother Deceased</option>';
+            sel_parental_status.innerHTML = parental_status_options_str;
+            div_parental_status.appendChild(sel_parental_status);
+            var lab_parental_status = document.createElement('div');
+            lab_parental_status.innerHTML = 'parental_status';
+            lab_parental_status.className = 'filterlabel';
+            div_parental_status.appendChild(lab_parental_status);
+            var reset_parental_status = document.createElement('div');
+            reset_parental_status.innerHTML = 'clear filter';
+            reset_parental_status.className = 'filterlabel';
+            reset_parental_status.onclick = function() {
+                var options = document.getElementById("sel_parental_status").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_parental_status.appendChild(reset_parental_status);
+        </script>
+    </body>
+</html>
